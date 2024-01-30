@@ -1,19 +1,28 @@
 import  {  Request, Response } from "express";
 import User from '../models/userModel';
 import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
 
 export const createUser=async(req:Request, res:Response) => {
+   
     try {
-        const new_user = new User({ 
-            name:req.body.name,
-            email:req.body.email,
-            password:req.body.password,
-            phoneNumber:req.body.phoneNumber
-        }) 
-        await new_user.save()
-        res.status(201).send(new_user)
+ bcrypt
+    .hash(req.body.password, 10)
+    .then(hash => {
+      const new_user = new User({ 
+        name:req.body.name,
+        email:req.body.email,
+        password:hash,
+        phoneNumber:req.body.phoneNumber
+    }) 
+     new_user.save()
+    res.status(201).send(new_user)
+    })
+    .catch(err => console.error(err.message))
+
+
     } catch (error) {
-        res.status(500).send('Internal Server Error');
+        res.status(500).send(error);
     }
 }
 
@@ -61,7 +70,15 @@ export const deleteUser=async(req:Request,res:Response)=>{
 }
 
 export const loginUser=async(req:Request, res:Response) => {
+try{
+    if(!req.body.name&&!req.body.password){
+       return res.status(500).json({
+            login: false,
+            error: 'please check name and password.'
+        });
+    }
     console.log(req.body)
+    
         const name = req.body.name;
         const password = req.body.password;
         const users = await User.find()
@@ -96,9 +113,12 @@ export const loginUser=async(req:Request, res:Response) => {
             });
     
         }else{
-            res.status(500).send('Internal Server Error').json({
+            res.status(500).json({
                 login: false,
                 error: 'please check name and password.'
             });
         }
+    }catch(error){
+        res.status(500).send(error);
+    }
     }
