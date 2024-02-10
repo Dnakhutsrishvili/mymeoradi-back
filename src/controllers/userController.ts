@@ -1,4 +1,4 @@
-import  {  Request, Response } from "express";
+import  {  NextFunction, Request, Response } from "express";
 import User from '../models/userModel';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 export const createUser=async(req:Request, res:Response) => {
    
     try {
+      console.log(req.body)
  bcrypt
     .hash(req.body.password, 10)
     .then(hash => {
@@ -70,55 +71,26 @@ export const deleteUser=async(req:Request,res:Response)=>{
 }
 
 export const loginUser=async(req:Request, res:Response) => {
-try{
-    if(!req.body.name&&!req.body.password){
-       return res.status(500).json({
-            login: false,
-            error: 'please check name and password.'
-        });
+    const { name, password } = req.body;
+
+  try {
+    const user = await User.findOne({ name });
+    console.log(user)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
-    console.log(req.body)
-    
-        const name = req.body.name;
-        const password = req.body.password;
-        const users = await User.find()
-    
-        let isPresent = false;
-        let isPresentIndex = null||0;
-    
-    
-        for(let i=0; i<users.length; i++){
-            if(users[i].name === name && 
-                users[i].password === password){
-                isPresent = true;
-                isPresentIndex = i;
-                break;
-            }
-        }
-        if(isPresent){
-    
-        const current_time = Math.floor(Date.now() / 1000);
-        const expiration_time = current_time + 864000; // ten days
-        const private_key = 'private_key';
-        const claims = {
-        'sub': 'public_key',
-        'exp': expiration_time
-    };
-    
-    const jwt_token = jwt.sign(claims, private_key, { algorithm: 'HS256' });
-            res.json({
-                login: true,
-                token: jwt_token,
-                data: users[isPresentIndex]
-            });
-    
-        }else{
-            res.status(500).json({
-                login: false,
-                error: 'please check name and password.'
-            });
-        }
-    }catch(error){
-        res.status(500).send(error);
-    }
-    }
+    await  bcrypt.compare(password, user.password, function(err, result) {
+        if (!result) {
+            return res.status(401).json({ message: 'Incorrect password' });
+          }
+          const token = jwt.sign({ userId: user._id }, "2345", {
+            expiresIn: '5 hour'
+          });
+          res.json({ token });
+    });
+  } catch (error) {
+    res.send(error);
+  }
+
+}
+

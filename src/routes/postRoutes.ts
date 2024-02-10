@@ -4,9 +4,9 @@ import { createPost,getAllPosts,getPost ,updatePost,deletePost} from '../control
 
 export const postRoutes = Router();
 
-postRoutes.post('/createPost', createPost);
-postRoutes.get('/getAllPosts',getAllPosts);
-postRoutes.get('/getPost/:id',getPost);
-postRoutes.patch('/updatePost/:id',updatePost);
-postRoutes.delete('/deletePost/:id',deletePost);
+postRoutes.post('/', createPost);
+postRoutes.get('/',getAllPosts);
+postRoutes.get('/:id',getPost);
+postRoutes.patch('/:id',updatePost);
+postRoutes.delete('/:id',deletePost);
 
