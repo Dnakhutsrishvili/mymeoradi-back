@@ -8,7 +8,9 @@ export const createPost=async(req:Request, res:Response) => {
             author:req.body.author,
             rating:req.body.rating,
             title:req.body.title,
+            img:req.body.img,
             text:req.body.text
+            
         }) 
         await newPost.save()
         res.status(201).send(newPost)
@@ -43,6 +45,7 @@ export const updatePost=async(req:Request,res:Response)=>{
         author:req.body.author,
         rating:req.body.rating,
         title:req.body.title,
+        img:req.body.img,
         text:req.body.text})
 
         res.status(201).send("post updated")

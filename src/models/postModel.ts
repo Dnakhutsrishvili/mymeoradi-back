@@ -2,14 +2,14 @@ import { Schema, model } from 'mongoose';
 
 interface IPost {
   author: string;
-  rating: number;
+  comments: Schema.Types.ObjectId;
   title: string;
   text: string;
 }
 
 const postSchema = new Schema<IPost>({
     author: { type: String, required: true },
-    rating: { type: Number, required: false },
+    comments:[ { type: Number,ref: 'Comment',required: false }],
     title: { type: String, required: true},
     text: { type: String, required: true },
 });

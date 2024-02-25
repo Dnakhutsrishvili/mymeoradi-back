@@ -6,7 +6,6 @@ import * as bcrypt from 'bcrypt';
 export const createUser=async(req:Request, res:Response) => {
    
     try {
-      console.log(req.body)
  bcrypt
     .hash(req.body.password, 10)
     .then(hash => {
@@ -71,11 +70,10 @@ export const deleteUser=async(req:Request,res:Response)=>{
 }
 
 export const loginUser=async(req:Request, res:Response) => {
-    const { name, password } = req.body;
+    const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ name });
-    console.log(user)
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -92,5 +90,25 @@ export const loginUser=async(req:Request, res:Response) => {
     res.send(error);
   }
 
+}
+
+
+
+export async function authenticateToken (req:Request, res:Response, next:NextFunction) {
+  const authHeader =  req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+
+  if (token == null) return res.sendStatus(401)
+
+  await jwt.verify(token as string,"2345", (err: any, user: any) => {
+    console.log(err)
+
+    if (err) return res.sendStatus(403)
+
+    //@ts-ignore
+    req.user = user
+    console.log(user)
+    next()
+  })
 }
 
